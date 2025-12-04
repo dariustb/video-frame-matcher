@@ -2,7 +2,7 @@
 #include <string>
 #include <iostream>
 
-#include <framescout_imagesearch.h>
+#include <vfm_imagesearch.h>
 
 namespace {
 	const std::string video_path = "example.mp4";

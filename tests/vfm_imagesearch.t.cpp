@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <framescout_imagesearch.h>
+#include <vfm_imagesearch.h>
 
 namespace {
     const double CONFIDENCE_THRESHOLD = 0.9;

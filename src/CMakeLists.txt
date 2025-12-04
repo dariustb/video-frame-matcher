@@ -1,25 +1,24 @@
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-add_executable(
-        framescout
-        framescout.m.cpp
+add_executable(vfm
+        main.cpp
 )
 
-add_library(framescout_core)
+add_library(vfm_core)
 add_subdirectory(core)
 
 if(OpenCV_FOUND)
-    target_link_libraries(framescout PRIVATE ${OpenCV_LIBS})
-    target_include_directories(framescout PRIVATE ${OpenCV_INCLUDE_DIRS})
+    target_link_libraries(vfm PRIVATE ${OpenCV_LIBS})
+    target_include_directories(vfm PRIVATE ${OpenCV_INCLUDE_DIRS})
 else()
-    target_link_libraries(framescout PRIVATE
+    target_link_libraries(vfm PRIVATE
         opencv_core
         opencv_imgproc
         opencv_imgcodecs
         opencv_videoio
     )
 
-    target_include_directories(framescout PRIVATE
+    target_include_directories(vfm PRIVATE
         ${opencv_SOURCE_DIR}/include
         ${opencv_SOURCE_DIR}/modules/core/include
         ${opencv_SOURCE_DIR}/modules/imgproc/include
@@ -30,6 +29,6 @@ else()
     )
 endif()
 
-target_link_libraries(framescout PUBLIC
-    framescout_core
+target_link_libraries(vfm PUBLIC
+    vfm_core
 )

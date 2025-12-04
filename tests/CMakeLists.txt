@@ -9,16 +9,16 @@ FetchContent_MakeAvailable(googletest)
 
 include(GoogleTest)
 
-add_executable(test_framescout)
-target_link_libraries(test_framescout
+add_executable(test_vfm)
+target_link_libraries(test_vfm
 	PUBLIC
 		GTest::gtest_main
-		framescout_core
+		vfm_core
 )
 
-target_sources(test_framescout
+target_sources(test_vfm
 	PRIVATE
-		framescout_imagesearch.t.cpp
+		vfm_imagesearch.t.cpp
 )
 
-gtest_discover_tests(test_framescout)
+gtest_discover_tests(test_vfm)
