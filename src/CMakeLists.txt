@@ -1,10 +1,12 @@
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 add_executable(vfm
-        main.cpp
+    main.cpp
 )
 
+add_library(vfm_cli)
 add_library(vfm_core)
+add_subdirectory(cli)
 add_subdirectory(core)
 
 if(OpenCV_FOUND)
@@ -30,5 +32,6 @@ else()
 endif()
 
 target_link_libraries(vfm PUBLIC
+    vfm_cli
     vfm_core
 )

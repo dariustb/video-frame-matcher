@@ -3,19 +3,21 @@
 #include <iostream>
 
 #include <vfm_imagesearch.h>
+#include <vfm_args.h>
 
 namespace {
 	const std::string video_path = "example.mp4";
 	const std::string image_path = "example_frame.jpg";
 }
 
-int main() {
+int main(int argc, char** argv) {
+    const Args args = parseArgs(argc, argv);
+
+	cv::VideoCapture video(args.video_path);
+	cv::Mat          image = cv::imread(args.image_path);
+
     ImageSearch ImSearch;
-
-	cv::VideoCapture user_video(video_path);
-	cv::Mat          user_image = cv::imread(image_path);
-
-    const ImageSearch::ReturnCode matchStatus = ImSearch.isImageWithinVideo(user_image, user_video);
+    const ImageSearch::ReturnCode matchStatus = ImSearch.isImageWithinVideo(image, video);
 
     switch (matchStatus) {
         case ImageSearch::e_SUCCESS:
