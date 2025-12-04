@@ -28,7 +28,7 @@ cv::Mat createTestImage(const cv::Scalar& color)
     return createTestImage(DEFAULT_IMAGE_HEIGHT, DEFAULT_IMAGE_WIDTH, color);
 }
 
-TEST(FrameScoutImageSearch, ConstructorDefaultValuesAreValid) {
+TEST(VFMImageSearch, ConstructorDefaultValuesAreValid) {
     // Given
     ImageSearch Test;
 
@@ -41,7 +41,7 @@ TEST(FrameScoutImageSearch, ConstructorDefaultValuesAreValid) {
     EXPECT_EQ(0, default_confidence);
 }
 
-TEST(FrameScoutImageSearch, isImageWithinFrameReturnsTrueForCroppedImages)
+TEST(VFMImageSearch, isImageWithinFrameReturnsTrueForCroppedImages)
 {
     // Given
     const cv::Mat t_frame = createTestImage();
@@ -59,7 +59,7 @@ TEST(FrameScoutImageSearch, isImageWithinFrameReturnsTrueForCroppedImages)
     EXPECT_GT(t_confidence, CONFIDENCE_THRESHOLD);
 }
 
-TEST(FrameScoutImageSearch, isImageWithinFrameReturnsTrueForRelatedImages)
+TEST(VFMImageSearch, isImageWithinFrameReturnsTrueForRelatedImages)
 {
     // Given
     const cv::Mat t_frame = createTestImage();    
@@ -77,7 +77,7 @@ TEST(FrameScoutImageSearch, isImageWithinFrameReturnsTrueForRelatedImages)
     EXPECT_GT(t_confidence, CONFIDENCE_THRESHOLD);
 }
 
-TEST(FrameScoutImageSearch, isImageWithinFrameReturnsFalseForUnrelatedImages)
+TEST(VFMImageSearch, isImageWithinFrameReturnsFalseForUnrelatedImages)
 {
     // Given
     const cv::Mat t_frame = createTestImage();    
