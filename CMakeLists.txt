@@ -1,26 +1,26 @@
-cmake_minimum_required(VERSION 3.22)
-project(framescout
-	VERSION 1.0
-	LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.28)
+project(framescout VERSION 1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_CLANG_TIDY "clang-tidy")
 
-include(FetchContent)
+# Find/fetch OpenCV
+find_package(OpenCV 4 QUIET COMPONENTS core imgproc imgcodecs videoio)
+if(NOT OpenCV_FOUND)
+  include(FetchContent)
 
-# Find OpenCV
-find_package(OpenCV REQUIRED)
+  FetchContent_Declare(
+    opencv
+    URL https://github.com/opencv/opencv/archive/refs/tags/4.12.0.zip
+  )
 
-# Fetch gtests
-# https://google.github.io/googletest/quickstart-cmake.html
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-)
-FetchContent_MakeAvailable(googletest)
+  FetchContent_MakeAvailable(opencv)
+endif()
 
-enable_testing()
+include(CTest)
 
 add_subdirectory(src)
 add_subdirectory(tests)
