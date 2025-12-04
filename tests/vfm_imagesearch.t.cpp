@@ -79,10 +79,19 @@ TEST(VFMImageSearch, isImageWithinFrameReturnsTrueForRelatedImages)
 
 TEST(VFMImageSearch, isImageWithinFrameReturnsFalseForUnrelatedImages)
 {
-    // Given
-    const cv::Mat t_frame = createTestImage();    
-    const cv::Mat t_image = createTestImage(RGB_RED);
-    
+    // Given - Images with different patterns, not just solid colors
+    // Frame with horizontal stripes
+    cv::Mat t_frame = createTestImage();
+    for (int i = 0; i < t_frame.rows; i += 10) {
+        cv::rectangle(t_frame, cv::Point(0, i), cv::Point(t_frame.cols, i + 5), RGB_RED, -1);
+    }
+
+    // Image with vertical stripes
+    cv::Mat t_image = createTestImage(RGB_RED);
+    for (int i = 0; i < t_image.cols; i += 10) {
+        cv::rectangle(t_image, cv::Point(i, 0), cv::Point(i + 5, t_image.rows), RGB_BLUE, -1);
+    }
+
     ASSERT_FALSE(t_frame.empty());
     ASSERT_FALSE(t_image.empty());
 
@@ -91,6 +100,6 @@ TEST(VFMImageSearch, isImageWithinFrameReturnsFalseForUnrelatedImages)
     const bool t_result = ImageSearch::isImageWithinFrame(t_image, t_frame, t_confidence);
 
     // Then
-    // EXPECT_FALSE(t_result);
-    // EXPECT_EQ(t_confidence, CONFIDENCE_NONE);
+    EXPECT_FALSE(t_result);
+    EXPECT_LT(t_confidence, CONFIDENCE_THRESHOLD);
 }
