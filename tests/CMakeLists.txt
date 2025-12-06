@@ -13,12 +13,15 @@ add_executable(test_vfm)
 target_link_libraries(test_vfm
 	PUBLIC
 		GTest::gtest_main
+		vfm_cli
 		vfm_core
 )
+target_include_directories(test_vfm PUBLIC ./)
 
 target_sources(test_vfm
 	PRIVATE
 		vfm_imagesearch.t.cpp
+		vfm_testimages.cpp
 )
 
 gtest_discover_tests(test_vfm)
