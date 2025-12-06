@@ -3,7 +3,7 @@
 #include <string>
 
 namespace {
-    const std::string APP_DESCRIPTION = "";
+    const std::string APP_DESCRIPTION = "C++ command-line tool for detecting occurrences of a reference image inside video frames, with timestamped match output, configurable thresholds, and optional JSON/visual exports";
 }
 
 Args parseArgs(int argc, char** argv) {
