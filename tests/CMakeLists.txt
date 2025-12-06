@@ -20,6 +20,7 @@ target_include_directories(test_vfm PUBLIC ./)
 
 target_sources(test_vfm
 	PRIVATE
+		vfm_args.t.cpp
 		vfm_imagesearch.t.cpp
 		vfm_testimages.cpp
 )
