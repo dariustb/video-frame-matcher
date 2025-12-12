@@ -2,98 +2,100 @@
 #include <opencv2/opencv.hpp>
 
 namespace {
-    const double CONFIDENCE_NONE      = 0;
-    const double CONFIDENCE_THRESHOLD = 0.9;
-    const double CONFIDENCE_CERTAIN   = 0.99;
-
 	const std::string OUTPUT_DIR = "output/";
 }  // namespace
 
 ImageSearch::ImageSearch()
-: ImageSearch(cv::Mat(0,0,CV_8UC1), 0, 0)
-{
-}
-
-ImageSearch::ImageSearch(cv::Mat frame, int frame_count, double confidence)
-: d_result_frame(frame)
-, d_result_frame_count(frame_count)
-, d_result_confidence(confidence)
 {
 }
 
 // Getters
-double ImageSearch::result_confidence() const
+const MatchResults& ImageSearch::results() const
 {
-    return d_result_confidence;
-}
-
-int ImageSearch::result_frame_count() const
-{
-    return d_result_frame_count;
+    return d_results;
 }
 
 // Search Functions
-bool ImageSearch::isImageWithinFrame(const cv::Mat& image, const cv::Mat& frame, double& confidence)
+void ImageSearch::isImageWithinFrame(const cv::Mat& image, const cv::Mat& frame, int frame_index, double fps, double threshold, std::vector<Match>& matches)
 {
-    cv::Mat   result;
-    double    minVal = 0;
-	double    maxVal = 0;
-    cv::Point minLoc(0,0);
-    cv::Point maxLoc(0,0);
-
-    cv::matchTemplate(frame, image, result, cv::TM_CCOEFF_NORMED);
-    cv::minMaxLoc(result, &minVal, &maxVal, &minLoc, &maxLoc);
-
-    if (maxVal >= CONFIDENCE_THRESHOLD) {
-        confidence = maxVal;
-        return true;
+    if (image.empty() || frame.empty()) {
+        return;
     }
 
-    return false;
+    cv::Mat   result;
+    cv::matchTemplate(frame, image, result, cv::TM_CCOEFF_NORMED);
+
+    // Find all matches above threshold
+    cv::Mat mask = result >= threshold;
+
+    std::vector<cv::Point> locations;
+    cv::findNonZero(mask, locations);
+
+    // Collect matches, avoiding duplicates from overlapping regions
+    const int min_distance = std::max(image.cols, image.rows) / 2;
+
+    for (const auto& loc : locations) {
+        double confidence = result.at<float>(loc);
+
+        // Check if this location is too close to an existing match
+        bool is_duplicate = false;
+        for (const auto& existing : matches) {
+            if (existing.frame_index == frame_index) {
+                int dx = loc.x - existing.x;
+                int dy = loc.y - existing.y;
+                int distance = std::sqrt(dx*dx + dy*dy);
+                if (distance < min_distance) {
+                    is_duplicate = true;
+                    break;
+                }
+            }
+        }
+
+        if (!is_duplicate) {
+            Match match;
+            match.frame_index = frame_index;
+            match.time_seconds = (fps > 0) ? (frame_index / fps) : 0.0;
+            match.score = confidence;
+            match.has_bbox = true;
+            match.x = loc.x;
+            match.y = loc.y;
+            match.w = image.cols;
+            match.h = image.rows;
+
+            matches.push_back(match);
+        }
+    }
 }
 
-MatchStatus ImageSearch::isImageWithinVideo(const cv::Mat& target_image, cv::VideoCapture& source_video)
+MatchStatus ImageSearch::isImageWithinVideo(const cv::Mat& target_image, cv::VideoCapture& source_video, double threshold, std::vector<Match>& matches)
 {
     if (!source_video.isOpened()) {
 		return MatchStatus::e_BAD_FILE;
 	}
 
 	cv::Mat   frame;
-	double    frame_confidence;
-	const int total_frames      = source_video.get(cv::CAP_PROP_FRAME_COUNT);
-	bool      isImageMatchFound = false;
+	const int total_frames = static_cast<int>(source_video.get(cv::CAP_PROP_FRAME_COUNT));
+	const double fps = source_video.get(cv::CAP_PROP_FPS);
 
-	for (int frame_count = 1; frame_count <= total_frames; ++frame_count) {
-		// Add new frame from video
+	matches.clear();
+
+	for (int frame_index = 1; frame_index <= total_frames; ++frame_index) {
+		// Read next frame from video
 		source_video >> frame;
 
-		const bool isImageinFrame = isImageWithinFrame(target_image, frame, frame_confidence);
-
-		if (isImageinFrame) {
-			// Set flag to found
-			isImageMatchFound = true;
-
-			// Track highest confidence
-			if (frame_confidence > d_result_confidence) {
-				d_result_confidence  = frame_confidence;
-				d_result_frame       = frame;
-				d_result_frame_count = frame_count;
-
-				// If openCV is certain, we can skip the rest of the frames.
-				if (d_result_confidence > CONFIDENCE_CERTAIN) {
-					frame.release();
-					return MatchStatus::e_SUCCESS;
-				}
-			}
+		if (frame.empty()) {
+			break;
 		}
+
+		isImageWithinFrame(target_image, frame, frame_index, fps, threshold, matches);
 
 		frame.release();
 	}
 
-	return isImageMatchFound ? MatchStatus::e_SUCCESS : MatchStatus::e_NO_MATCH_FOUND;
+	return matches.empty() ? MatchStatus::e_NO_MATCH_FOUND : MatchStatus::e_SUCCESS;
 }
 
-MatchStatus ImageSearch::searchVideoForImage(const std::string& image_path, const std::string& video_path, ImageSearch& result)
+MatchStatus ImageSearch::searchVideoForImage(const std::string& image_path, const std::string& video_path, double threshold, ImageSearch& result)
 {
     cv::VideoCapture video(video_path);
     cv::Mat          image = cv::imread(image_path);
@@ -102,11 +104,63 @@ MatchStatus ImageSearch::searchVideoForImage(const std::string& image_path, cons
         return MatchStatus::e_BAD_FILE;
     }
 
-    return result.isImageWithinVideo(image, video);
+    // Populate metadata
+    result.d_results.image = getImageMetadata(image_path);
+    result.d_results.video = getVideoMetadata(video_path);
+
+    // Perform the search
+    MatchStatus status = isImageWithinVideo(image, video, threshold, result.d_results.matches);
+    result.d_results.status = status;
+
+    return status;
 }
 
-// File I/O Functions
-void ImageSearch::exportResultFrame()
+// Metadata Functions
+ImageMetadata ImageSearch::getImageMetadata(const std::string& image_path)
 {
-    cv::imwrite(OUTPUT_DIR + "result.jpg", d_result_frame);
+    ImageMetadata metadata;
+    metadata.path = image_path;
+
+    cv::Mat image = cv::imread(image_path);
+
+    if (image.empty()) {
+        metadata.width = 0;
+        metadata.height = 0;
+        metadata.channels = 0;
+    } else {
+        metadata.width = image.cols;
+        metadata.height = image.rows;
+        metadata.channels = image.channels();
+    }
+
+    return metadata;
+}
+
+VideoMetadata ImageSearch::getVideoMetadata(const std::string& video_path)
+{
+    VideoMetadata metadata;
+    metadata.path = video_path;
+
+    cv::VideoCapture video(video_path);
+
+    if (!video.isOpened()) {
+        metadata.fps = 0.0;
+        metadata.frame_count = 0;
+        metadata.duration_sec = 0.0;
+        metadata.width = 0;
+        metadata.height = 0;
+    } else {
+        metadata.fps = video.get(cv::CAP_PROP_FPS);
+        metadata.frame_count = static_cast<int>(video.get(cv::CAP_PROP_FRAME_COUNT));
+        metadata.width = static_cast<int>(video.get(cv::CAP_PROP_FRAME_WIDTH));
+        metadata.height = static_cast<int>(video.get(cv::CAP_PROP_FRAME_HEIGHT));
+
+        if (metadata.fps > 0) {
+            metadata.duration_sec = metadata.frame_count / metadata.fps;
+        } else {
+            metadata.duration_sec = 0.0;
+        }
+    }
+
+    return metadata;
 }

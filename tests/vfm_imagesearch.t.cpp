@@ -12,12 +12,10 @@ TEST(VFMImageSearch, ConstructorDefaultValuesAreValid) {
     ImageSearch test;
 
     // When
-    const int    default_frame_count = test.result_frame_count();
-    const double default_confidence  = test.result_confidence();
+    const MatchResults& results = test.results();
 
     // Then
-    EXPECT_EQ(0, default_frame_count);
-    EXPECT_EQ(0, default_confidence);
+    EXPECT_TRUE(results.matches.empty());
 }
 
 TEST(VFMImageSearch, isImageWithinFrameReturnsTrueForCroppedImages)
@@ -30,12 +28,14 @@ TEST(VFMImageSearch, isImageWithinFrameReturnsTrueForCroppedImages)
     ASSERT_FALSE(image.empty());
 
     // When
-    double confidence = CONFIDENCE_NONE;
-    const bool result = ImageSearch::isImageWithinFrame(image, frame, confidence);
+    std::vector<Match> matches;
+    ImageSearch::isImageWithinFrame(image, frame, 1, 30.0, CONFIDENCE_THRESHOLD, matches);
 
     // Then
-    EXPECT_TRUE(result);
-    EXPECT_GT(confidence, CONFIDENCE_THRESHOLD);
+    EXPECT_FALSE(matches.empty());
+    if (!matches.empty()) {
+        EXPECT_GT(matches[0].score, CONFIDENCE_THRESHOLD);
+    }
 }
 
 TEST(VFMImageSearch, isImageWithinFrameReturnsTrueForIdenticalImages)
@@ -48,12 +48,14 @@ TEST(VFMImageSearch, isImageWithinFrameReturnsTrueForIdenticalImages)
     ASSERT_FALSE(image.empty());
 
     // When
-    double confidence = CONFIDENCE_NONE;
-    const bool result = ImageSearch::isImageWithinFrame(image, frame, confidence);
+    std::vector<Match> matches;
+    ImageSearch::isImageWithinFrame(image, frame, 1, 30.0, CONFIDENCE_THRESHOLD, matches);
 
     // Then
-    EXPECT_TRUE(result);
-    EXPECT_GT(confidence, CONFIDENCE_THRESHOLD);
+    EXPECT_FALSE(matches.empty());
+    if (!matches.empty()) {
+        EXPECT_GT(matches[0].score, CONFIDENCE_THRESHOLD);
+    }
 }
 
 TEST(VFMImageSearch, isImageWithinFrameReturnsFalseForUnrelatedImages)
@@ -68,12 +70,11 @@ TEST(VFMImageSearch, isImageWithinFrameReturnsFalseForUnrelatedImages)
     ASSERT_FALSE(image.empty());
 
     // When
-    double confidence = CONFIDENCE_NONE;
-    const bool result = ImageSearch::isImageWithinFrame(image, frame, confidence);
+    std::vector<Match> matches;
+    ImageSearch::isImageWithinFrame(image, frame, 1, 30.0, CONFIDENCE_THRESHOLD, matches);
 
     // Then
-    EXPECT_FALSE(result);
-    EXPECT_LT(confidence, CONFIDENCE_THRESHOLD);
+    EXPECT_TRUE(matches.empty());
 }
 
 TEST(VFMImageSearch, isImageWithinFrameReturnsTrueWhenUsingSmallImage)
@@ -86,12 +87,14 @@ TEST(VFMImageSearch, isImageWithinFrameReturnsTrueWhenUsingSmallImage)
     ASSERT_FALSE(image.empty());
 
     // When
-    double confidence = CONFIDENCE_NONE;
-    const bool result = ImageSearch::isImageWithinFrame(image, frame, confidence);
+    std::vector<Match> matches;
+    ImageSearch::isImageWithinFrame(image, frame, 1, 30.0, CONFIDENCE_THRESHOLD, matches);
 
     // Then
-    EXPECT_TRUE(result);
-    EXPECT_GT(confidence, CONFIDENCE_THRESHOLD);
+    EXPECT_FALSE(matches.empty());
+    if (!matches.empty()) {
+        EXPECT_GT(matches[0].score, CONFIDENCE_THRESHOLD);
+    }
 }
 
 TEST(VFMImageSearch, isImageWithinFrameUpdatesConfidenceParameter)
@@ -104,11 +107,14 @@ TEST(VFMImageSearch, isImageWithinFrameUpdatesConfidenceParameter)
     ASSERT_FALSE(image.empty());
 
     // When
-    double confidence = CONFIDENCE_NONE;
-    ImageSearch::isImageWithinFrame(image, frame, confidence);
+    std::vector<Match> matches;
+    ImageSearch::isImageWithinFrame(image, frame, 1, 30.0, CONFIDENCE_THRESHOLD, matches);
 
     // Then
-    EXPECT_NE(confidence, CONFIDENCE_NONE);
+    EXPECT_FALSE(matches.empty());
+    if (!matches.empty()) {
+        EXPECT_NE(matches[0].score, CONFIDENCE_NONE);
+    }
 }
 
 TEST(VFMImageSearch, isImageWithinFrameReturnsTrueWhenPartialMatch)
@@ -122,12 +128,14 @@ TEST(VFMImageSearch, isImageWithinFrameReturnsTrueWhenPartialMatch)
     ASSERT_FALSE(image.empty());
 
     // When
-    double confidence = CONFIDENCE_NONE;
-    const bool result = ImageSearch::isImageWithinFrame(image, frame, confidence);
+    std::vector<Match> matches;
+    ImageSearch::isImageWithinFrame(image, frame, 1, 30.0, CONFIDENCE_THRESHOLD, matches);
 
     // Then
-    EXPECT_TRUE(result);
-    EXPECT_GT(confidence, CONFIDENCE_THRESHOLD);
+    EXPECT_FALSE(matches.empty());
+    if (!matches.empty()) {
+        EXPECT_GT(matches[0].score, CONFIDENCE_THRESHOLD);
+    }
 }
 
 TEST(VFMImageSearch, isImageWithinVideoReturnsSuccessWhenImageFound)
@@ -149,14 +157,17 @@ TEST(VFMImageSearch, isImageWithinVideoReturnsSuccessWhenImageFound)
 
     // When
     cv::VideoCapture video(video_path);
-    ImageSearch test;
-    ImageSearch::ReturnCode result = test.isImageWithinVideo(target_image, video);
+    std::vector<Match> matches;
+    MatchStatus result = ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
     video.release();
 
     // Then
-    EXPECT_EQ(ImageSearch::e_SUCCESS, result);
-    EXPECT_GT(test.result_confidence(), CONFIDENCE_THRESHOLD);
-    EXPECT_GT(test.result_frame_count(), 0);
+    EXPECT_EQ(MatchStatus::e_SUCCESS, result);
+    EXPECT_FALSE(matches.empty());
+    if (!matches.empty()) {
+        EXPECT_GT(matches[0].score, CONFIDENCE_THRESHOLD);
+        EXPECT_GT(matches[0].frame_index, 0);
+    }
 
     // Cleanup
     cleanupTestVideo(video_path);
@@ -183,12 +194,12 @@ TEST(VFMImageSearch, isImageWithinVideoReturnsNoMatchWhenImageNotFound)
 
     // When
     cv::VideoCapture video(video_path);
-    ImageSearch test;
-    ImageSearch::ReturnCode result = test.isImageWithinVideo(target_image, video);
+    std::vector<Match> matches;
+    MatchStatus result = ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
     video.release();
 
     // Then
-    EXPECT_EQ(ImageSearch::e_NO_MATCH_FOUND, result);
+    EXPECT_EQ(MatchStatus::e_NO_MATCH_FOUND, result);
 
     // Cleanup
     cleanupTestVideo(video_path);
@@ -201,11 +212,11 @@ TEST(VFMImageSearch, isImageWithinVideoReturnsBadFileForInvalidVideo)
     cv::Mat target_image = createTestImage(50, 50);
 
     // When
-    ImageSearch test;
-    ImageSearch::ReturnCode result = test.isImageWithinVideo(target_image, video);
+    std::vector<Match> matches;
+    MatchStatus result = ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
 
     // Then
-    EXPECT_EQ(ImageSearch::e_BAD_FILE, result);
+    EXPECT_EQ(MatchStatus::e_BAD_FILE, result);
 }
 
 TEST(VFMImageSearch, isImageWithinVideoTracksHighestConfidenceFrame)
@@ -230,15 +241,20 @@ TEST(VFMImageSearch, isImageWithinVideoTracksHighestConfidenceFrame)
 
     // When
     cv::VideoCapture video(video_path);
-    ImageSearch test;
-    ImageSearch::ReturnCode result = test.isImageWithinVideo(target_image, video);
+    std::vector<Match> matches;
+    MatchStatus result = ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
     video.release();
 
     // Then
-    EXPECT_EQ(ImageSearch::e_SUCCESS, result);
-    EXPECT_GT(test.result_confidence(), CONFIDENCE_THRESHOLD);
-    EXPECT_GE(test.result_frame_count(), 1);
-    EXPECT_LE(test.result_frame_count(), 2);
+    EXPECT_EQ(MatchStatus::e_SUCCESS, result);
+    EXPECT_FALSE(matches.empty());
+    if (!matches.empty()) {
+        auto best_match = std::max_element(matches.begin(), matches.end(),
+            [](const Match& a, const Match& b) { return a.score < b.score; });
+        EXPECT_GT(best_match->score, CONFIDENCE_THRESHOLD);
+        EXPECT_GE(best_match->frame_index, 1);
+        EXPECT_LE(best_match->frame_index, 2);
+    }
 
     // Cleanup
     cleanupTestVideo(video_path);
@@ -274,13 +290,18 @@ TEST(VFMImageSearch, isImageWithinVideoStoresCorrectFrameCount)
 
     // When
     cv::VideoCapture video(video_path);
-    ImageSearch test;
-    ImageSearch::ReturnCode result = test.isImageWithinVideo(target_image, video);
+    std::vector<Match> matches;
+    MatchStatus result = ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
     video.release();
 
     // Then
-    EXPECT_EQ(ImageSearch::e_SUCCESS, result);
-    EXPECT_EQ(4, test.result_frame_count());
+    EXPECT_EQ(MatchStatus::e_SUCCESS, result);
+    EXPECT_FALSE(matches.empty());
+
+    // Find match at frame 4
+    auto frame4_match = std::find_if(matches.begin(), matches.end(),
+        [](const Match& m) { return m.frame_index == 4; });
+    EXPECT_NE(frame4_match, matches.end());
 
     // Cleanup
     cleanupTestVideo(video_path);
@@ -301,52 +322,18 @@ TEST(VFMImageSearch, isImageWithinVideoWithSingleFrameVideo)
 
     // When
     cv::VideoCapture video(video_path);
-    ImageSearch test;
-    ImageSearch::ReturnCode result = test.isImageWithinVideo(target_image, video);
+    std::vector<Match> matches;
+    MatchStatus result = ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
     video.release();
 
     // Then
-    EXPECT_EQ(ImageSearch::e_SUCCESS, result);
-    EXPECT_EQ(1, test.result_frame_count());
+    EXPECT_EQ(MatchStatus::e_SUCCESS, result);
+    EXPECT_FALSE(matches.empty());
+    if (!matches.empty()) {
+        EXPECT_EQ(1, matches[0].frame_index);
+    }
 
     // Cleanup
     cleanupTestVideo(video_path);
 }
 
-TEST(VFMImageSearch, exportResultFrameCreatesFile)
-{
-    // Given - ImageSearch with a result frame
-    cv::Mat test_frame = createTestImage(100, 100, RGB_BLUE);
-    ImageSearch test(test_frame, 1, 0.95);
-
-    // Create output directory if it doesn't exist
-    system("mkdir -p output");
-
-    // When
-    test.exportResultFrame();
-
-    // Then - Check if file was created
-    std::ifstream file("output/result.jpg");
-    EXPECT_TRUE(file.good());
-    file.close();
-
-    // Cleanup
-    std::remove("output/result.jpg");
-}
-
-TEST(VFMImageSearch, exportResultFrameWithEmptyFrame)
-{
-    // Given
-    cv::Mat empty_frame;
-    ImageSearch test(empty_frame, 0, 0.0);
-
-    // Create output directory if it doesn't exist
-    system("mkdir -p output");
-
-    // When - OpenCV will throw exception for empty frame
-    // This is expected behavior, so we test that it throws
-    EXPECT_THROW(test.exportResultFrame(), cv::Exception);
-
-    // Cleanup (file may or may not exist)
-    std::remove("output/result.jpg");
-}
