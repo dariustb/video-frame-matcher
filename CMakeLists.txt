@@ -11,3 +11,7 @@ include(CTest)
 
 add_subdirectory(src)
 add_subdirectory(tests)
+
+install(TARGETS vfm
+    RUNTIME DESTINATION bin
+)
