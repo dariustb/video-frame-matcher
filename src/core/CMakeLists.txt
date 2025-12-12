@@ -1,9 +1,8 @@
-target_include_directories(vfm_core PUBLIC ./)
-
-target_sources(vfm_core
- 	PRIVATE
-		vfm_imagesearch.cpp
+add_library(vfm_core
+    vfm_imagesearch.cpp
 )
+
+target_include_directories(vfm_core PUBLIC ./)
 
 # Find/fetch OpenCV
 find_package(OpenCV 4 QUIET COMPONENTS core imgproc imgcodecs videoio)

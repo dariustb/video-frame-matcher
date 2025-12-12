@@ -1,9 +1,8 @@
-target_include_directories(vfm_cli PUBLIC ./)
-
-target_sources(vfm_cli
- 	PRIVATE
-		vfm_args.cpp
+add_library(vfm_cli
+    vfm_args.cpp
 )
+
+target_include_directories(vfm_cli PUBLIC ./)
 
 # Fetch CLI11
 include(FetchContent)
