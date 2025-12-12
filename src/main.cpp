@@ -7,13 +7,10 @@
 int main(int argc, char** argv) {
     const Args args = parseArgs(argc, argv);
 
-    ImageSearch ImSearch;
-    const MatchStatus matchStatus = ImageSearch::searchVideoForImage(args.image_path, args.video_path, args.threshold, ImSearch);
+    const MatchResults results = ImageSearch::searchVideoForImage(args.image_path, args.video_path, args.threshold);
 
-    switch (matchStatus) {
+    switch (results.status) {
         case MatchStatus::e_SUCCESS: {
-            const MatchResults& results = ImSearch.results();
-
             // Find the best match
             auto best_match = std::max_element(results.matches.begin(), results.matches.end(),
                 [](const Match& a, const Match& b) { return a.score < b.score; });

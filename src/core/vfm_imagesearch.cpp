@@ -5,16 +5,6 @@ namespace {
 	const std::string OUTPUT_DIR = "output/";
 }  // namespace
 
-ImageSearch::ImageSearch()
-{
-}
-
-// Getters
-const MatchResults& ImageSearch::results() const
-{
-    return d_results;
-}
-
 // Search Functions
 void ImageSearch::isImageWithinFrame(const cv::Mat& image, const cv::Mat& frame, int frame_index, double fps, double threshold, std::vector<Match>& matches)
 {
@@ -95,24 +85,26 @@ MatchStatus ImageSearch::isImageWithinVideo(const cv::Mat& target_image, cv::Vid
 	return matches.empty() ? MatchStatus::e_NO_MATCH_FOUND : MatchStatus::e_SUCCESS;
 }
 
-MatchStatus ImageSearch::searchVideoForImage(const std::string& image_path, const std::string& video_path, double threshold, ImageSearch& result)
+MatchResults ImageSearch::searchVideoForImage(const std::string& image_path, const std::string& video_path, double threshold)
 {
+    MatchResults results;
+
     cv::VideoCapture video(video_path);
     cv::Mat          image = cv::imread(image_path);
 
     if (image.empty()) {
-        return MatchStatus::e_BAD_FILE;
+        results.status = MatchStatus::e_BAD_FILE;
+        return results;
     }
 
     // Populate metadata
-    result.d_results.image = getImageMetadata(image_path);
-    result.d_results.video = getVideoMetadata(video_path);
+    results.image = getImageMetadata(image_path);
+    results.video = getVideoMetadata(video_path);
 
     // Perform the search
-    MatchStatus status = isImageWithinVideo(image, video, threshold, result.d_results.matches);
-    result.d_results.status = status;
+    results.status = isImageWithinVideo(image, video, threshold, results.matches);
 
-    return status;
+    return results;
 }
 
 // Metadata Functions

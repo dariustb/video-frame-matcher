@@ -1,22 +1,10 @@
 #include <gtest/gtest.h>
 #include <opencv2/opencv.hpp>
-#include <fstream>
 
 #include <vfm_imagesearch.h>
 #include <vfm_testimages.h>
 
 using namespace vfm_test;
-
-TEST(VFMImageSearch, ConstructorDefaultValuesAreValid) {
-    // Given
-    ImageSearch test;
-
-    // When
-    const MatchResults& results = test.results();
-
-    // Then
-    EXPECT_TRUE(results.matches.empty());
-}
 
 TEST(VFMImageSearch, isImageWithinFrameReturnsTrueForCroppedImages)
 {
