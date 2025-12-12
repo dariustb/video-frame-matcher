@@ -2,16 +2,10 @@
 #define INCLUDED_VFM_IMAGESEARCH
 
 #include <opencv2/opencv.hpp>
+#include <vfm_types.h>
 
 class ImageSearch {
   public:
-    // Enums
-    enum ReturnCode {
-      e_SUCCESS,
-      e_NO_MATCH_FOUND,
-      e_BAD_FILE
-    };
-
     // Constructor
     ImageSearch();
     ImageSearch(cv::Mat frame, int frame_count, double confidence);
@@ -22,7 +16,8 @@ class ImageSearch {
 
     // Search Functions
     static bool isImageWithinFrame(const cv::Mat& image, const cv::Mat& frame, double& confidence);
-    ReturnCode  isImageWithinVideo(const cv::Mat& target_image, cv::VideoCapture& source_video);    
+    MatchStatus isImageWithinVideo(const cv::Mat& target_image, cv::VideoCapture& source_video);
+    static MatchStatus searchVideoForImage(const std::string& image_path, const std::string& video_path, ImageSearch& result);    
 
     // I/O Functions
     void       exportResultFrame();

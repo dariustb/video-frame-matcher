@@ -1,4 +1,3 @@
-#include <opencv2/opencv.hpp>
 #include <iostream>
 
 #include <vfm_imagesearch.h>
@@ -7,28 +6,25 @@
 int main(int argc, char** argv) {
     const Args args = parseArgs(argc, argv);
 
-	cv::VideoCapture video(args.video_path);
-	cv::Mat          image = cv::imread(args.image_path);
-
     ImageSearch ImSearch;
-    const ImageSearch::ReturnCode matchStatus = ImSearch.isImageWithinVideo(image, video);
+    const MatchStatus matchStatus = ImageSearch::searchVideoForImage(args.image_path, args.video_path, ImSearch);
 
     switch (matchStatus) {
-        case ImageSearch::e_SUCCESS:
+        case MatchStatus::e_SUCCESS:
             ImSearch.exportResultFrame();
             std::cout << "Selected frame # "  << ImSearch.result_frame_count()
                     << " with confidence of " << ImSearch.result_confidence() * 100
                     << "%." << std::endl;
             break;
-        
-        case ImageSearch::e_NO_MATCH_FOUND:
+
+        case MatchStatus::e_NO_MATCH_FOUND:
             std::cout << "No match found" << std::endl;
             break;
 
-        case ImageSearch::e_BAD_FILE:
+        case MatchStatus::e_BAD_FILE:
             std::cerr << "Error: could not open file" << std::endl;
             break;
-        
+
         default:
             std::cerr << "Error: unexpected return value" << std::endl;
             break;

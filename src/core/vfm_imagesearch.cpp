@@ -52,10 +52,10 @@ bool ImageSearch::isImageWithinFrame(const cv::Mat& image, const cv::Mat& frame,
     return false;
 }
 
-ImageSearch::ReturnCode ImageSearch::isImageWithinVideo(const cv::Mat& target_image, cv::VideoCapture& source_video)
+MatchStatus ImageSearch::isImageWithinVideo(const cv::Mat& target_image, cv::VideoCapture& source_video)
 {
     if (!source_video.isOpened()) {
-		return e_BAD_FILE;
+		return MatchStatus::e_BAD_FILE;
 	}
 
 	cv::Mat   frame;
@@ -66,9 +66,9 @@ ImageSearch::ReturnCode ImageSearch::isImageWithinVideo(const cv::Mat& target_im
 	for (int frame_count = 1; frame_count <= total_frames; ++frame_count) {
 		// Add new frame from video
 		source_video >> frame;
-	
+
 		const bool isImageinFrame = isImageWithinFrame(target_image, frame, frame_confidence);
-		
+
 		if (isImageinFrame) {
 			// Set flag to found
 			isImageMatchFound = true;
@@ -82,7 +82,7 @@ ImageSearch::ReturnCode ImageSearch::isImageWithinVideo(const cv::Mat& target_im
 				// If openCV is certain, we can skip the rest of the frames.
 				if (d_result_confidence > CONFIDENCE_CERTAIN) {
 					frame.release();
-					return e_SUCCESS;
+					return MatchStatus::e_SUCCESS;
 				}
 			}
 		}
@@ -90,7 +90,19 @@ ImageSearch::ReturnCode ImageSearch::isImageWithinVideo(const cv::Mat& target_im
 		frame.release();
 	}
 
-	return isImageMatchFound ? e_SUCCESS : e_NO_MATCH_FOUND;
+	return isImageMatchFound ? MatchStatus::e_SUCCESS : MatchStatus::e_NO_MATCH_FOUND;
+}
+
+MatchStatus ImageSearch::searchVideoForImage(const std::string& image_path, const std::string& video_path, ImageSearch& result)
+{
+    cv::VideoCapture video(video_path);
+    cv::Mat          image = cv::imread(image_path);
+
+    if (image.empty()) {
+        return MatchStatus::e_BAD_FILE;
+    }
+
+    return result.isImageWithinVideo(image, video);
 }
 
 // File I/O Functions
