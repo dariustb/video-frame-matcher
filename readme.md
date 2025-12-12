@@ -16,24 +16,24 @@ Video Frame Matcher is a command-line tool that detects occurrences of a referen
 - Configurable frame-step scanning
 
 ## Installation
-#### Build
+Build:
 ```sh
 cmake -S . -B build
 cmake --build build
 ```
 
-#### Install vfm to ~/.local/bin (make sure this is on your PATH)
+Install vfm to ~/.local/bin (make sure this is on your PATH):
 ```sh
 cmake --install build --prefix ~/.local
 ```
 
 ## How to Use
-### Basic Detection
+Basic Detection:
 ```sh
 vfm --video clip.mp4 --image ref.png
 ```
 
-### Tuned Search
+Tuned Search:
 ```sh
 vfm \
   --video clip.mp4 \
@@ -58,7 +58,7 @@ cd build
 ctest --output-on-failure
 ```
 
-(Optional) Run the test binary directly
+(Optional) Run the test binary directly:
 ```sh
 cd build/tests
 ./test_vfm
