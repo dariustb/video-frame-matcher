@@ -1,85 +1,76 @@
-<!-- PROJECT SHIELDS -->
+<!-- Project Shields -->
 [![Gtest][gtest-svg]][gtest-url]
-![GitHub repo size](https://img.shields.io/github/repo-size/dariustb/FrameScout)
+![GitHub repo size][repo-size]
 
-<!-- PROJECT LOGO -->
-<br />
-<div align="center">
-  <a href="https://github.com/dariustb/FrameScout">
-    <img src="https://yt3.googleusercontent.com/ytc/AIf8zZTit8pdgUXqee-kRWDXO1waKq6GkEOJWgubAUF4rA=s176-c-k-c0x00ffffff-no-rj-mo" alt="Logo" width="100" height="100">
-  </a>
+<!-- Readme Text -->
+# Video Frame Matcher
 
-  <h1 align="center">FrameScout</h1>
+## Overview
+Video Frame Matcher is a command-line tool that detects occurrences of a reference image within a video file. It scans video frames at selected intervals and reports matching frame numbers and timestamps based on a similarity threshold. The tool is designed for deterministic, scriptable use in automated workflows.
 
-  <p align="center">
-    A console application to find cropped images within a frame of a MP4/video.
-    <br />
-    <a href="https://dariustb.github.io/FrameScout/"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/dariustb/FrameScout/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/dariustb/FrameScout/issues">Request Feature</a>
-  </p>
-</div>
+## Features
+- Exact-match and template-based image detection
+- Frame-index reporting
+- Deterministic, scriptable CLI output
+- Configurable similarity threshold
+- Configurable frame-step scanning
 
-<!-- ABOUT THE PROJECT -->
-## About The Project
-I wrote this (originally in Python) as a solution to a challenge issued on November 26, 2022 by pianist, educator, and YouTube creator, [Charles Cornell][cornell_yt].
+## Installation
+#### Build
+```sh
+cmake -S . -B build
+cmake --build build
+```
 
-Cornell basically asks in [a community post][community_post] to find this candid image from a video frame that he found hisself:
+#### Install vfm to ~/.local/bin (make sure this is on your PATH)
+```sh
+cmake --install build --prefix ~/.local
+```
 
-![image to find](docs/assets/image_reference.jpg)
+## How to Use
+### Basic Detection
+```sh
+vfm --video clip.mp4 --image ref.png
+```
 
-This frame will be in a video that he will post later on Youtube, *[How is the Spy Family Soundtrack THIS Good?][spy_family_video]*. Whoever emails him the correct screenshot first gets Cornell's entire selection of music courses for free ($99 value!). 
+### Tuned Search
+```sh
+vfm \
+  --video clip.mp4 \
+  --image ref.png \
+  --threshold 0.85 \
+  --frame-step 2 \
+  --start-time 0.0 \
+  --end-time 12.0
+```
 
-**This is begging to be automated.**
+## Output Format
+```sh
+TBA
+```
 
-And this program will separate your video into frames and search any image (cropped or not cropped) inside of each frame:
+## Testing
+All tests are built as part of the normal build
 
-![Screenshot (Frame 425 if you're curious)](docs/assets/image_frame.png)
+Run the full test suite:
+```sh
+cd build
+ctest --output-on-failure
+```
 
-Shout out to Flynn for getting the win!
+(Optional) Run the test binary directly
+```sh
+cd build/tests
+./test_vfm
+```
 
+## Limitations
+- Template matching may fail under heavy lighting variation
+- No GPU acceleration
+- No multi-image batch mode
+- Assumes constant FPS streams
 
-### Built With
-* [![C++][cpp.io]][cpp]
-* [![CMake][cmake.io]][cmake]
-* [![OpenCV][opencv.io]][opencv]
-* [![Lubuntu][lubuntu.io]][lubuntu]
-
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[repo]: git@github.com:dariustb/FrameScoutApp.git
-
-[cornell_yt]: https://www.youtube.com/@FrameScoutStudios
-
-[community_post]: https://www.youtube.com/channel/UC4PIiYewI1YGyiZvgNlJNrA/community?lb=Ugkxlx5jZVyfMHIXrW2T43Eut6tu1673pgBB
-
-[spy_family_video]: https://www.youtube.com/watch?v=lFIixuIdYhY
-
-[docs]: https://dariustb.github.io/FrameScout/
-
-<!-- Technologies -->
-[cpp]:      https://devdocs.io/cpp/
-[cmake]:    https://cmake.org/
-[opencv]:   https://opencv.org/
-[lubuntu]:  https://lubuntu.me/
-
-<!-- Featured images -->
-[product-screenshot]:   /docs/assets/images/wf_start.png
-
-<!-- CI Test badges -->
-[gtest-svg]:  https://github.com/dariustb/FrameScout/actions/workflows/gtest.yml/badge.svg
-[gtest-url]:  https://github.com/dariustb/FrameScout/actions/workflows/gtest.yml
-[tidy-svg]:   https://github.com/dariustb/FrameScout/actions/workflows/clang-tidy.yml/badge.svg
-[tidy-url]:   https://github.com/dariustb/FrameScout/actions/workflows/clang-tidy.yml
-
-<!-- Markdown Badges -->
-[cpp.io]:       https://img.shields.io/badge/c++-%2300599C.svg?style=for-the-badge&logo=c%2B%2B&logoColor=white
-[cmake.io]:     https://img.shields.io/badge/CMake-%23008FBA.svg?style=for-the-badge&logo=cmake&logoColor=white
-[opencv.io]:    https://img.shields.io/badge/opencv-%23white.svg?style=for-the-badge&logo=opencv&logoColor=white
-[lubuntu.io]:   https://img.shields.io/badge/-Lubuntu-%230065C2?style=for-the-badge&logo=lubuntu&logoColor=white
+<!-- CI Test Badges -->
+[gtest-svg]:  https://github.com/dariustb/video-frame-matcher/actions/workflows/gtest.yml/badge.svg
+[gtest-url]:  https://github.com/dariustb/video-frame-matcher/actions/workflows/gtest.yml
+[repo-size]:  https://img.shields.io/github/repo-size/dariustb/video-frame-matcher
