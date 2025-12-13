@@ -6,6 +6,7 @@
 #include <vfm_args.h>
 #include <vfm_imagesearch.h>
 #include <vfm_io.h>
+#include <vfm_json.h>
 #include <vfm_types.h>
 
 int main(int argc, char** argv) {
@@ -38,6 +39,14 @@ int main(int argc, char** argv) {
         default:
             std::cerr << "Error: internal error" << std::endl;
             return 4;
+    }
+
+    if (!args.output_json.empty()) {
+        if (!vfm::writeMatchResultsToFile(results, args.output_json)) {
+            std::cerr << "Error: failed to write JSON output to " << args.output_json << std::endl;
+            return 3;
+        }
+        std::cout << "JSON output written to: " << args.output_json << std::endl;
     }
 
 	return 0;
