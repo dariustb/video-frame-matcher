@@ -15,6 +15,7 @@ target_link_libraries(test_vfm
 		GTest::gtest_main
 		vfm_cli
 		vfm_core
+		vfm_json
 )
 target_include_directories(test_vfm PUBLIC ./)
 
@@ -22,6 +23,7 @@ target_sources(test_vfm
 	PRIVATE
 		vfm_args.t.cpp
 		vfm_imagesearch.t.cpp
+		vfm_json.t.cpp
 		vfm_testimages.cpp
 )
 
