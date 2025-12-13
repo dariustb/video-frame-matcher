@@ -12,7 +12,7 @@ void printResults(const MatchResults &results)
     }
 
     // Find the best match
-    auto best_match = std::max_element(results.matches.begin(), results.matches.end(),
+    const auto best_match = std::max_element(results.matches.begin(), results.matches.end(),
     [](const Match& a, const Match& b) { return a.score < b.score; });
 
     if (best_match != results.matches.end()) {
