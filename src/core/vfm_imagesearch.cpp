@@ -1,10 +1,6 @@
 #include <vfm_imagesearch.h>
 #include <opencv2/opencv.hpp>
 
-namespace {
-	const std::string OUTPUT_DIR = "output/";
-}  // namespace
-
 // Search Functions
 void ImageSearch::isImageWithinFrame(const cv::Mat& image, const cv::Mat& frame, int frame_index, double fps, double threshold, std::vector<Match>& matches)
 {
