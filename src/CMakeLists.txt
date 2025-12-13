@@ -1,6 +1,7 @@
 add_subdirectory(cli)
 add_subdirectory(core)
 add_subdirectory(io)
+add_subdirectory(json)
 
 add_executable(vfm
     main.cpp
@@ -10,6 +11,7 @@ target_link_libraries(vfm PUBLIC
     vfm_cli
     vfm_core
     vfm_io
+    vfm_json
 )
 
 if(OpenCV_FOUND)

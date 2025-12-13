@@ -14,26 +14,27 @@ Video Frame Matcher is a command-line tool that detects occurrences of a referen
 - Deterministic, scriptable CLI output
 - Configurable similarity threshold
 - Configurable frame-step scanning
+- Optional JSON export 
 
 ## Installation
-#### Build
+Build:
 ```sh
 cmake -S . -B build
 cmake --build build
 ```
 
-#### Install vfm to ~/.local/bin (make sure this is on your PATH)
+Install vfm to ~/.local/bin (make sure this is on your PATH):
 ```sh
 cmake --install build --prefix ~/.local
 ```
 
 ## How to Use
-### Basic Detection
+Basic Detection:
 ```sh
 vfm --video clip.mp4 --image ref.png
 ```
 
-### Tuned Search
+Tuned Search:
 ```sh
 vfm \
   --video clip.mp4 \
@@ -45,8 +46,61 @@ vfm \
 ```
 
 ## Output Format
+Stdout:
 ```sh
-TBA
+video-frame-matcher$ vfm --video clip.mp4 --image ref.jpg --output-json ./output.json
+Found 16 match(es)
+Best match at frame # 148 (2.96s) with confidence of 99.9494%.
+JSON output written to: ./output.json
+```
+
+Json Output:
+```json
+{
+    "image": {
+        "channels": 3,
+        "height": 1366,
+        "path": "ref2.jpg",
+        "width": 720
+    },
+    "matches": [
+        {
+            "bbox": {
+                "h": 1366,
+                "w": 720,
+                "x": 0,
+                "y": 0
+            },
+            "frame_index": 139,
+            "has_bbox": true,
+            "score": 0.8710225820541382,
+            "time_seconds": 2.78
+        },
+        {
+            "bbox": {
+                "h": 1366,
+                "w": 720,
+                "x": 0,
+                "y": 0
+            },
+            "frame_index": 140,
+            "has_bbox": true,
+            "score": 0.8710888028144836,
+            "time_seconds": 2.8
+        },
+...
+
+    ],
+    "status": "SUCCESS",
+    "video": {
+        "duration_sec": 20.04,
+        "fps": 50.0,
+        "frame_count": 1002,
+        "height": 1366,
+        "path": "test.mp4",
+        "width": 720
+    }
+}
 ```
 
 ## Testing
@@ -58,7 +112,7 @@ cd build
 ctest --output-on-failure
 ```
 
-(Optional) Run the test binary directly
+(Optional) Run the test binary directly:
 ```sh
 cd build/tests
 ./test_vfm
