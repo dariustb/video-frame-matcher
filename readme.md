@@ -14,6 +14,7 @@ Video Frame Matcher is a command-line tool that detects occurrences of a referen
 - Deterministic, scriptable CLI output
 - Configurable similarity threshold
 - Configurable frame-step scanning
+- Optional JSON export 
 
 ## Installation
 Build:
