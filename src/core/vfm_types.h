@@ -51,9 +51,13 @@ struct ImageMetadata {
 
 struct MatchResults {
     MatchStatus              status;
-    VideoMetadata            video;
     ImageMetadata            image;
+    VideoMetadata            video;
     std::vector<Match>       matches;
+
+    MatchResults() = delete;
+    MatchResults(const MatchStatus status,const ImageMetadata& image,
+                 const VideoMetadata& video, const std::vector<Match>& matches);
 };
 
 #endif

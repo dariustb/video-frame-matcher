@@ -34,3 +34,11 @@ ImageMetadata::ImageMetadata(const std::string& path, const int width, const int
 , height(height)
 , channels(channels)
 {}
+
+MatchResults::MatchResults(const MatchStatus status, const ImageMetadata& image,
+    const VideoMetadata& video, const std::vector<Match>& matches)
+: status(status)
+, video(video)
+, image(image)
+, matches(matches)
+{}
