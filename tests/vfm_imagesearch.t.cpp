@@ -197,7 +197,7 @@ TEST(VFMImageSearch, isImageWithinVideoReturnsBadFileForInvalidVideo)
 {
     // Given
     cv::VideoCapture video("nonexistent_video.mp4");
-    cv::Mat target_image = createTestImage(50, 50);
+    const cv::Mat target_image = createTestImage(50, 50);
 
     // When
     std::vector<Match> matches;
@@ -230,7 +230,7 @@ TEST(VFMImageSearch, isImageWithinVideoTracksHighestConfidenceFrame)
     // When
     cv::VideoCapture video(video_path);
     std::vector<Match> matches;
-    MatchStatus result = ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
+    const MatchStatus result = ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
     video.release();
 
     // Then
@@ -288,7 +288,7 @@ TEST(VFMImageSearch, isImageWithinVideoStoresCorrectFrameCount)
     EXPECT_FALSE(matches.empty());
 
     // Find match at frame 4
-    auto frame4_match = std::find_if(matches.begin(), matches.end(),
+    const auto frame4_match = std::find_if(matches.begin(), matches.end(),
         [](const Match& m) { return m.frame_index == 4; });
     EXPECT_NE(frame4_match, matches.end());
 
@@ -312,7 +312,7 @@ TEST(VFMImageSearch, isImageWithinVideoWithSingleFrameVideo)
     // When
     cv::VideoCapture video(video_path);
     std::vector<Match> matches;
-    MatchStatus result = ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
+    const MatchStatus result = ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
     video.release();
 
     // Then
