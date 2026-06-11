@@ -21,15 +21,15 @@ void ImageSearch::isImageWithinFrame(const cv::Mat& image, const cv::Mat& frame,
     const int min_distance = std::max(image.cols, image.rows) / 2;
 
     for (const auto& loc : locations) {
-        double confidence = result.at<float>(loc);
+        const double confidence = result.at<float>(loc);
 
         // Check if this location is too close to an existing match
         bool is_duplicate = false;
-        for (const auto& existing : matches) {
+        for (const Match& existing : matches) {
             if (existing.frame_index == frame_index) {
-                int dx = loc.x - existing.x;
-                int dy = loc.y - existing.y;
-                int distance = std::sqrt(dx*dx + dy*dy);
+                const int dx = loc.x - existing.x;
+                const int dy = loc.y - existing.y;
+                const int distance = std::sqrt(dx*dx + dy*dy);
                 if (distance < min_distance) {
                     is_duplicate = true;
                     break;
@@ -38,16 +38,16 @@ void ImageSearch::isImageWithinFrame(const cv::Mat& image, const cv::Mat& frame,
         }
 
         if (!is_duplicate) {
-            Match match;
-            match.frame_index = frame_index;
-            match.time_seconds = (fps > 0) ? (frame_index / fps) : 0.0;
-            match.score = confidence;
-            match.has_bbox = true;
-            match.x = loc.x;
-            match.y = loc.y;
-            match.w = image.cols;
-            match.h = image.rows;
-
+            const Match match(
+                fps ? (frame_index / fps) : 0.0,
+                frame_index,
+                confidence,
+                true,
+                loc.x,
+                loc.y,
+                image.cols,
+                image.rows
+            );
             matches.push_back(match);
         }
     }
@@ -59,11 +59,10 @@ MatchStatus ImageSearch::isImageWithinVideo(const cv::Mat& target_image, cv::Vid
 		return MatchStatus::e_BAD_FILE;
 	}
 
-	cv::Mat   frame;
+	matches.clear();
+	cv::Mat frame;
 	const int total_frames = static_cast<int>(source_video.get(cv::CAP_PROP_FRAME_COUNT));
 	const double fps = source_video.get(cv::CAP_PROP_FPS);
-
-	matches.clear();
 
 	for (int frame_index = 1; frame_index <= total_frames; ++frame_index) {
 		// Read next frame from video
@@ -83,72 +82,50 @@ MatchStatus ImageSearch::isImageWithinVideo(const cv::Mat& target_image, cv::Vid
 
 MatchResults ImageSearch::searchVideoForImage(const std::string& image_path, const std::string& video_path, double threshold)
 {
-    MatchResults results;
-
-    cv::VideoCapture video(video_path);
-    cv::Mat          image = cv::imread(image_path);
+    const cv::Mat image = cv::imread(image_path);
 
     if (image.empty()) {
-        results.status = MatchStatus::e_BAD_FILE;
-        return results;
+        const ImageMetadata badImageMeta(image_path);
+        const VideoMetadata badVideoMeta(image_path);
+
+        return MatchResults(MatchStatus::e_BAD_FILE, badImageMeta, badVideoMeta, std::vector<Match>{});
     }
 
     // Populate metadata
-    results.image = getImageMetadata(image_path);
-    results.video = getVideoMetadata(video_path);
+    const ImageMetadata imageMeta = getImageMetadata(image_path);
+    const VideoMetadata videoMeta = getVideoMetadata(video_path);
 
     // Perform the search
-    results.status = isImageWithinVideo(image, video, threshold, results.matches);
+    cv::VideoCapture video(video_path);
+    std::vector<Match> matches;
+    const MatchStatus status = isImageWithinVideo(image, video, threshold, matches);
 
-    return results;
+    return MatchResults(status, imageMeta, videoMeta, matches);
 }
 
 // Metadata Functions
 ImageMetadata ImageSearch::getImageMetadata(const std::string& image_path)
 {
-    ImageMetadata metadata;
-    metadata.path = image_path;
+    const cv::Mat image = cv::imread(image_path);
 
-    cv::Mat image = cv::imread(image_path);
-
-    if (image.empty()) {
-        metadata.width = 0;
-        metadata.height = 0;
-        metadata.channels = 0;
-    } else {
-        metadata.width = image.cols;
-        metadata.height = image.rows;
-        metadata.channels = image.channels();
-    }
-
-    return metadata;
+    return image.empty()
+           ? ImageMetadata(image_path)
+           : ImageMetadata(image_path, image.cols, image.rows, image.channels());
 }
 
 VideoMetadata ImageSearch::getVideoMetadata(const std::string& video_path)
 {
-    VideoMetadata metadata;
-    metadata.path = video_path;
-
     cv::VideoCapture video(video_path);
 
-    if (!video.isOpened()) {
-        metadata.fps = 0.0;
-        metadata.frame_count = 0;
-        metadata.duration_sec = 0.0;
-        metadata.width = 0;
-        metadata.height = 0;
-    } else {
-        metadata.fps = video.get(cv::CAP_PROP_FPS);
-        metadata.frame_count = static_cast<int>(video.get(cv::CAP_PROP_FRAME_COUNT));
-        metadata.width = static_cast<int>(video.get(cv::CAP_PROP_FRAME_WIDTH));
-        metadata.height = static_cast<int>(video.get(cv::CAP_PROP_FRAME_HEIGHT));
+    if (video.isOpened()) {
+        const double fps = video.get(cv::CAP_PROP_FPS); 
+        const int frame_count = static_cast<int>(video.get(cv::CAP_PROP_FRAME_COUNT));
+        const double duration = fps ? frame_count / fps : 0.0;
+        const int width = static_cast<int>(video.get(cv::CAP_PROP_FRAME_WIDTH));
+        const int height = static_cast<int>(video.get(cv::CAP_PROP_FRAME_HEIGHT));
 
-        if (metadata.fps > 0) {
-            metadata.duration_sec = metadata.frame_count / metadata.fps;
-        } else {
-            metadata.duration_sec = 0.0;
-        }
+        return VideoMetadata(video_path, fps, frame_count, duration, width, height);
     }
 
-    return metadata;
+    return VideoMetadata(video_path);
 }
