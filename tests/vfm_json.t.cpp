@@ -24,20 +24,19 @@ private:
 
 TEST_F(VfmJsonTest, matchResultsToJsonCreatesValidJsonGivenSuccessfulMatchWithBbox) {
     // Given
-    MatchResults results;
-    results.status = MatchStatus::e_SUCCESS;
-    results.video = {"video.mp4", 30.0, 900, 30.0, 1920, 1080};
-    results.image = {"image.jpg", 640, 480, 3};
-
-    Match match;
-    match.time_seconds = 5.5;
-    match.frame_index = 165;
-    match.score = 0.95;
-    match.has_bbox = true;
-    match.x = 100;
-    match.y = 200;
-    match.w = 300;
-    match.h = 400;
+    MatchResults results(
+        MatchStatus::e_SUCCESS,
+        {"image.jpg", 640, 480, 3},
+        {"video.mp4", 30.0, 900, 30.0, 1920, 1080},
+        {}
+    );
+    const Match match(
+        5.5,
+        165,
+        0.95,
+        true,
+        100, 200, 300, 400
+    );
     results.matches.push_back(match);
 
     // When
@@ -68,16 +67,20 @@ TEST_F(VfmJsonTest, matchResultsToJsonCreatesValidJsonGivenSuccessfulMatchWithBb
 
 TEST_F(VfmJsonTest, matchResultsToJsonExcludesBboxGivenMatchWithoutBbox) {
     // Given
-    MatchResults results;
-    results.status = MatchStatus::e_SUCCESS;
-    results.video = {"video.mp4", 30.0, 900, 30.0, 1920, 1080};
-    results.image = {"image.jpg", 640, 480, 3};
+    MatchResults results(
+        MatchStatus::e_SUCCESS,
+        {"image.jpg", 640, 480, 3},
+        {"video.mp4", 30.0, 900, 30.0, 1920, 1080},
+        {}
+    );
 
-    Match match;
-    match.time_seconds = 12.3;
-    match.frame_index = 369;
-    match.score = 0.87;
-    match.has_bbox = false;
+    const Match match(
+        12.3,
+        369,
+        0.87,
+        false,
+        0, 0, 0, 0
+    );
     results.matches.push_back(match);
 
     // When
@@ -91,10 +94,12 @@ TEST_F(VfmJsonTest, matchResultsToJsonExcludesBboxGivenMatchWithoutBbox) {
 
 TEST_F(VfmJsonTest, matchResultsToJsonHandlesNoMatchFoundStatus) {
     // Given
-    MatchResults results;
-    results.status = MatchStatus::e_NO_MATCH_FOUND;
-    results.video = {"video.mp4", 30.0, 900, 30.0, 1920, 1080};
-    results.image = {"image.jpg", 640, 480, 3};
+    const MatchResults results(
+        MatchStatus::e_NO_MATCH_FOUND,
+        {"image.jpg", 640, 480, 3},
+        {"video.mp4", 30.0, 900, 30.0, 1920, 1080},
+        {}
+    );
 
     // When
     nlohmann::json j = vfm::matchResultsToJson(results);
@@ -106,10 +111,12 @@ TEST_F(VfmJsonTest, matchResultsToJsonHandlesNoMatchFoundStatus) {
 
 TEST_F(VfmJsonTest, matchResultsToJsonHandlesBadFileStatus) {
     // Given
-    MatchResults results;
-    results.status = MatchStatus::e_BAD_FILE;
-    results.video = {"video.mp4", 0.0, 0, 0.0, 0, 0};
-    results.image = {"image.jpg", 0, 0, 0};
+    const MatchResults results(
+        MatchStatus::e_BAD_FILE,
+        {"image.jpg"},
+        {"video.mp4"},
+        {}
+    );
 
     // When
     nlohmann::json j = vfm::matchResultsToJson(results);
@@ -120,36 +127,36 @@ TEST_F(VfmJsonTest, matchResultsToJsonHandlesBadFileStatus) {
 
 TEST_F(VfmJsonTest, matchResultsToJsonHandlesMultipleMatches) {
     // Given
-    MatchResults results;
-    results.status = MatchStatus::e_SUCCESS;
-    results.video = {"video.mp4", 30.0, 900, 30.0, 1920, 1080};
-    results.image = {"image.jpg", 640, 480, 3};
+    MatchResults results(
+        MatchStatus::e_BAD_FILE,
+        {"image.jpg", 640, 480, 3},
+        {"video.mp4", 30.0, 900, 30.0, 1920, 1080},
+        {}
+    );
 
-    Match match1;
-    match1.time_seconds = 5.5;
-    match1.frame_index = 165;
-    match1.score = 0.95;
-    match1.has_bbox = true;
-    match1.x = 100;
-    match1.y = 200;
-    match1.w = 300;
-    match1.h = 400;
+    const Match match1(
+        5.5,
+        165,
+        0.95,
+        true,
+        100, 200, 300, 400
+    );
 
-    Match match2;
-    match2.time_seconds = 12.3;
-    match2.frame_index = 369;
-    match2.score = 0.87;
-    match2.has_bbox = false;
+    const Match match2(
+        12.3,
+        369,
+        0.87,
+        false,
+        0, 0, 0, 0
+    );
 
-    Match match3;
-    match3.time_seconds = 20.1;
-    match3.frame_index = 603;
-    match3.score = 0.92;
-    match3.has_bbox = true;
-    match3.x = 50;
-    match3.y = 75;
-    match3.w = 200;
-    match3.h = 150;
+    const Match match3(
+        20.1,
+        603,
+        0.92,
+        true,
+        50, 75, 200, 150
+    );
 
     results.matches.push_back(match1);
     results.matches.push_back(match2);
@@ -170,10 +177,12 @@ TEST_F(VfmJsonTest, matchResultsToJsonHandlesMultipleMatches) {
 
 TEST_F(VfmJsonTest, matchResultsToJsonStringCreatesFormattedStringGivenIndent) {
     // Given
-    MatchResults results;
-    results.status = MatchStatus::e_SUCCESS;
-    results.video = {"video.mp4", 30.0, 900, 30.0, 1920, 1080};
-    results.image = {"image.jpg", 640, 480, 3};
+    const MatchResults results(
+        MatchStatus::e_SUCCESS,
+        {"image.jpg", 640, 480, 3},
+        {"video.mp4", 30.0, 900, 30.0, 1920, 1080},
+        {}
+    );
 
     // When
     std::string json_str = vfm::matchResultsToJsonString(results, 4);
@@ -187,11 +196,12 @@ TEST_F(VfmJsonTest, matchResultsToJsonStringCreatesFormattedStringGivenIndent) {
 
 TEST_F(VfmJsonTest, matchResultsToJsonStringCreatesCompactStringGivenNoIndent) {
     // Given
-    MatchResults results;
-    results.status = MatchStatus::e_SUCCESS;
-    results.video = {"video.mp4", 30.0, 900, 30.0, 1920, 1080};
-    results.image = {"image.jpg", 640, 480, 3};
-
+    const MatchResults results(
+        MatchStatus::e_SUCCESS,
+        {"image.jpg", 640, 480, 3},
+        {"video.mp4", 30.0, 900, 30.0, 1920, 1080},
+        {}
+    );
     // When
     std::string json_str = vfm::matchResultsToJsonString(results, -1);
 
@@ -202,27 +212,27 @@ TEST_F(VfmJsonTest, matchResultsToJsonStringCreatesCompactStringGivenNoIndent) {
 
 TEST_F(VfmJsonTest, writeMatchResultsToFileCreatesFileGivenValidPath) {
     // Given
-    MatchResults results;
-    results.status = MatchStatus::e_SUCCESS;
-    results.video = {"video.mp4", 30.0, 900, 30.0, 1920, 1080};
-    results.image = {"image.jpg", 640, 480, 3};
-
-    Match match;
-    match.time_seconds = 5.5;
-    match.frame_index = 165;
-    match.score = 0.95;
-    match.has_bbox = true;
-    match.x = 100;
-    match.y = 200;
-    match.w = 300;
-    match.h = 400;
+    MatchResults results(
+        MatchStatus::e_SUCCESS,
+        {"image.jpg", 640, 480, 3},
+        {"video.mp4", 30.0, 900, 30.0, 1920, 1080},
+        {}
+    );
+    
+    const Match match(
+        5.5,
+        165,
+        0.95,
+        true,
+        100, 200, 300, 400
+    );
     results.matches.push_back(match);
 
-    std::string filename = "test_output_valid.json";
+    const std::string filename = "test_output_valid.json";
     trackFile(filename);
 
     // When
-    bool success = vfm::writeMatchResultsToFile(results, filename, 4);
+    const bool success = vfm::writeMatchResultsToFile(results, filename, 4);
 
     // Then
     EXPECT_TRUE(success);
@@ -243,13 +253,16 @@ TEST_F(VfmJsonTest, writeMatchResultsToFileCreatesFileGivenValidPath) {
 
 TEST_F(VfmJsonTest, writeMatchResultsToFileReturnsFalseGivenInvalidPath) {
     // Given
-    MatchResults results;
-    results.status = MatchStatus::e_SUCCESS;
-    results.video = {"video.mp4", 30.0, 900, 30.0, 1920, 1080};
-    results.image = {"image.jpg", 640, 480, 3};
+    const MatchResults results(
+        MatchStatus::e_SUCCESS,
+        {"image.jpg", 640, 480, 3},
+        {"video.mp4", 30.0, 900, 30.0, 1920, 1080},
+        {}
+    );
 
     // When
-    bool success = vfm::writeMatchResultsToFile(results, "/invalid/path/that/does/not/exist/output.json", 4);
+    const bool success = vfm::writeMatchResultsToFile(
+        results, "/invalid/path/that/does/not/exist/output.json", 4);
 
     // Then
     EXPECT_FALSE(success);
@@ -257,16 +270,18 @@ TEST_F(VfmJsonTest, writeMatchResultsToFileReturnsFalseGivenInvalidPath) {
 
 TEST_F(VfmJsonTest, writeMatchResultsToFileWritesCompactJsonGivenNegativeIndent) {
     // Given
-    MatchResults results;
-    results.status = MatchStatus::e_NO_MATCH_FOUND;
-    results.video = {"video.mp4", 30.0, 900, 30.0, 1920, 1080};
-    results.image = {"image.jpg", 640, 480, 3};
+    MatchResults results(
+        MatchStatus::e_NO_MATCH_FOUND,
+        {"image.jpg", 640, 480, 3},
+        {"video.mp4", 30.0, 900, 30.0, 1920, 1080},
+        {}
+    );
 
-    std::string filename = "test_output_compact.json";
+    const std::string filename = "test_output_compact.json";
     trackFile(filename);
 
     // When
-    bool success = vfm::writeMatchResultsToFile(results, filename, -1);
+    const bool success = vfm::writeMatchResultsToFile(results, filename, -1);
 
     // Then
     EXPECT_TRUE(success);
@@ -287,21 +302,24 @@ TEST_F(VfmJsonTest, writeMatchResultsToFileOverwritesExistingFile) {
     trackFile(filename);
 
     // Create initial file
-    MatchResults results1;
-    results1.status = MatchStatus::e_NO_MATCH_FOUND;
-    results1.video = {"old_video.mp4", 25.0, 750, 30.0, 1280, 720};
-    results1.image = {"old_image.jpg", 320, 240, 3};
-
+    const MatchResults results1(
+        MatchStatus::e_NO_MATCH_FOUND,
+        {"old_image.jpg", 320, 240, 3},
+        {"old_video.mp4", 25.0, 750, 30.0, 1280, 720},
+        {}
+    );
     vfm::writeMatchResultsToFile(results1, filename, 4);
 
     // Create new results
-    MatchResults results2;
-    results2.status = MatchStatus::e_SUCCESS;
-    results2.video = {"new_video.mp4", 60.0, 1800, 30.0, 3840, 2160};
-    results2.image = {"new_image.jpg", 1920, 1080, 3};
+    const MatchResults results2(
+        MatchStatus::e_SUCCESS,
+        {"new_image.jpg", 1920, 1080, 3},
+        {"new_video.mp4", 60.0, 1800, 30.0, 3840, 2160},
+        {}
+    );
 
     // When
-    bool success = vfm::writeMatchResultsToFile(results2, filename, 4);
+    const bool success = vfm::writeMatchResultsToFile(results2, filename, 4);
 
     // Then
     EXPECT_TRUE(success);

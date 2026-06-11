@@ -140,13 +140,13 @@ TEST(VFMImageSearch, isImageWithinVideoReturnsSuccessWhenImageFound)
     target_image.copyTo(frame_with_target(cv::Rect(0, 0, 50, 50)));
     frames.push_back(frame_with_target);
 
-    std::string video_path = createTestVideo(frames);
+    const std::string video_path = createTestVideo(frames);
     ASSERT_FALSE(video_path.empty());
 
     // When
     cv::VideoCapture video(video_path);
     std::vector<Match> matches;
-    MatchStatus result = ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
+    const MatchStatus result = ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
     video.release();
 
     // Then
@@ -177,13 +177,13 @@ TEST(VFMImageSearch, isImageWithinVideoReturnsNoMatchWhenImageNotFound)
     // Frame 3 Solid yellow
     frames.push_back(createTestImage(100, 100, RGB_YELLOW));
 
-    std::string video_path = createTestVideo(frames);
+    const std::string video_path = createTestVideo(frames);
     ASSERT_FALSE(video_path.empty());
 
     // When
     cv::VideoCapture video(video_path);
     std::vector<Match> matches;
-    MatchStatus result = ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
+    const MatchStatus result = ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
     video.release();
 
     // Then
@@ -201,7 +201,7 @@ TEST(VFMImageSearch, isImageWithinVideoReturnsBadFileForInvalidVideo)
 
     // When
     std::vector<Match> matches;
-    MatchStatus result = ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
+    const MatchStatus result = ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
 
     // Then
     EXPECT_EQ(MatchStatus::e_BAD_FILE, result);
@@ -224,7 +224,7 @@ TEST(VFMImageSearch, isImageWithinVideoTracksHighestConfidenceFrame)
     target_image.copyTo(frame2(cv::Rect(25, 25, 50, 50))); // Centered for potentially better match
     frames.push_back(frame2);
 
-    std::string video_path = createTestVideo(frames);
+    const std::string video_path = createTestVideo(frames);
     ASSERT_FALSE(video_path.empty());
 
     // When
@@ -273,13 +273,14 @@ TEST(VFMImageSearch, isImageWithinVideoStoresCorrectFrameCount)
     target_image.copyTo(frame_with_target(cv::Rect(10, 10, 50, 50)));
     frames.push_back(frame_with_target);
 
-    std::string video_path = createTestVideo(frames);
+    const std::string video_path = createTestVideo(frames);
     ASSERT_FALSE(video_path.empty());
 
     // When
     cv::VideoCapture video(video_path);
     std::vector<Match> matches;
-    MatchStatus result = ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
+    const MatchStatus result =
+        ImageSearch::isImageWithinVideo(target_image, video, CONFIDENCE_THRESHOLD, matches);
     video.release();
 
     // Then
@@ -305,7 +306,7 @@ TEST(VFMImageSearch, isImageWithinVideoWithSingleFrameVideo)
     target_image.copyTo(frame(cv::Rect(0, 0, 50, 50)));
     frames.push_back(frame);
 
-    std::string video_path = createTestVideo(frames);
+    const std::string video_path = createTestVideo(frames);
     ASSERT_FALSE(video_path.empty());
 
     // When
