@@ -1,5 +1,6 @@
 add_library(vfm_core
     vfm_imagesearch.cpp
+    vfm_types.cpp
 )
 
 target_include_directories(vfm_core PUBLIC ./)
